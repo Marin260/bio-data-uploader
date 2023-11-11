@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <label for="file">File</label>
+    <input id="file" type="file" name="file" />
+    <button id="submit-file">Upload</button>
+  </body>
+  <script defer>
+    const URL = "http://localhost:8080";
+    const upload = (e) => {
+      console.log("dude i clicked it");
+
+      const fileInput = document.getElementById("file");
+      if (fileInput.files.length > 0 && fileInput.files.length < 2) {
+        const formData = new FormData();
+        formData.append("file", fileInput.files[0]);
+        fetch(URL + "/csv-upload", {
+          method: "post",
+          body: formData,
+        })
+          .then(async (val) => {
+            const data = await val.json();
+            const img = await fetch(URL + "/img/" + data.message);
+            console.log(img);
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      }
+
+      e.preventDefault();
+      e.stopImmediatePropagation();
+    };
+    document.getElementById("submit-file").addEventListener("click", (e) => {
+      upload(e);
+    });
+  </script>
+</html>
