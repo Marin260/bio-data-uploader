@@ -20,7 +20,7 @@
       if (fileInput.files.length > 0 && fileInput.files.length < 2) {
         const formData = new FormData();
         formData.append("file", fileInput.files[0]);
-        fetch(BACKEND_URL + "/csv-upload", {
+        fetch(BACKEND_URL + "/file-upload", {
           method: "post",
           body: formData,
         })

@@ -1,0 +1,10 @@
+[GIN-debug] GET    /ping                     --> example.com/packages/internal/api.HealthCheck (5 handlers)
+[GIN-debug] POST   /file-upload              --> example.com/packages/internal/api.FileUpload (5 handlers)
+[GIN-debug] GET    /img/sleep/:name          --> example.com/packages/internal/api.Sleep (5 handlers)
+[GIN-debug] GET    /img/activity/:name       --> example.com/packages/internal/api.Activity (5 handlers)
+[GIN-debug] [WARNING] You trusted all proxies, this is NOT safe. We recommend you to set a value.
+Please check https://pkg.go.dev/github.com/gin-gonic/gin#readme-don-t-trust-all-proxies for details.
+[GIN-debug] Listening and serving HTTP on :8080
+::1 - [Sun, 12 Nov 2023 13:44:28 CET] "POST /file-upload HTTP/1.1 200 4.756614503s "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36" "
+::1 - [Sun, 12 Nov 2023 13:44:28 CET] "GET /img/sleep/tmbcMFCtM008 HTTP/1.1 200 4.325083ms "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36" "
+::1 - [Sun, 12 Nov 2023 13:44:28 CET] "GET /img/activity/tmbcMFCtM008 HTTP/1.1 200 4.137291ms "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36" "
