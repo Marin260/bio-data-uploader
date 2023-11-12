@@ -9,9 +9,10 @@
     <label for="file">File</label>
     <input id="file" type="file" name="file" />
     <button id="submit-file">Upload</button>
+    <div id="imgs"></div>
   </body>
   <script defer>
-    const URL = "http://localhost:8080";
+    const BACKEND_URL = "http://localhost:8080";
     const upload = (e) => {
       console.log("dude i clicked it");
 
@@ -19,14 +20,24 @@
       if (fileInput.files.length > 0 && fileInput.files.length < 2) {
         const formData = new FormData();
         formData.append("file", fileInput.files[0]);
-        fetch(URL + "/csv-upload", {
+        fetch(BACKEND_URL + "/csv-upload", {
           method: "post",
           body: formData,
         })
           .then(async (val) => {
             const data = await val.json();
-            const img = await fetch(URL + "/img/" + data.message);
-            console.log(img);
+            //const img = await (
+            //  await fetch(BACKEND_URL + "/img/" + data.message)
+            //).blob();
+            //console.log(URL.createObjectURL(img));
+
+            const sleepImg = document.createElement("img");
+            const activityImg = document.createElement("img");
+            sleepImg.src = "http://localhost:8080/img/sleep/" + data.message;
+            activityImg.src =
+              "http://localhost:8080/img/activity/" + data.message;
+            document.getElementById("imgs").appendChild(sleepImg);
+            document.getElementById("imgs").appendChild(activityImg);
           })
           .catch((err) => {
             console.log(err);

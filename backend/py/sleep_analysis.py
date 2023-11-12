@@ -53,6 +53,7 @@ files = load_files_from_folder(DATA_PATH)
 
 print("the files: ", files)
 
+# TODO: read these dates from a file
 times = [['2023-03-01 08:00:00', '2023-03-02 07:59:00'],
          ['2023-03-02 08:00:00', '2023-03-03 07:59:00'],
          ['2023-03-03 08:00:00', '2023-03-02 07:59:00'],

@@ -71,13 +71,28 @@ func main() {
 			"message": fileName,
 		})
 
-		// Send image back
-		//c.File("./../output/sleep.png")
-		//c.File("./../output/activity.png")
-
+		// Remove all created files to free up space
+		scriptOutDir := strings.Split(fileName, "Ct")[1]
+		fmt.Println("This is the out folder Aloooo", scriptOutDir) 
+		os.RemoveAll("./../output/" + scriptOutDir)
+		os.RemoveAll("./../output/sleep")
+		os.Remove("./../output/" + fileName + ".txt")
 	})
-	r.GET("/img/:name", func(c *gin.Context) {
-		c.File("./../output/sleep.png")
+	r.GET("/img/sleep/:name", func(c *gin.Context) {
+		filePath := fmt.Sprintf("./../output/%s-sleep.png", c.Params.ByName("name"))
+		c.File(filePath)
+		err := os.Remove(filePath)
+		if err != nil {
+			fmt.Println("Error deleting sleep img", err)
+		}
+	})
+	r.GET("/img/activity/:name", func(c *gin.Context) {
+		filePath := fmt.Sprintf("./../output/%s-activity.png", c.Params.ByName("name"))
+		c.File(filePath)
+		err := os.Remove(filePath)
+		if err != nil {
+			fmt.Println("Error deleting activity img", err)
+		}
 	})
 
 	r.Run(":8080")
