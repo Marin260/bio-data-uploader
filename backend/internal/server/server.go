@@ -14,7 +14,7 @@ func BioServer() *gin.Engine{
 	r := gin.Default()
 
 	// Create a log file
-	logfile, _ := os.Create("bio-request-logger.log")
+	logfile, _ := os.Create("./../logs/bio-request-logger.log")
 	gin.DefaultWriter = io.MultiWriter(logfile)
 	log.SetOutput(io.MultiWriter(logfile, gin.DefaultWriter))
 
