@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// TODO: log activity
+// TODO: add basic auth/basic JWT?
 func BioServer() *gin.Engine{
 	r := gin.Default()
 
