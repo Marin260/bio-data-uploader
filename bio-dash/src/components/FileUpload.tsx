@@ -1,8 +1,9 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { ImgEndpoints, sendFile } from "../utils/send-file";
 
 const baseStyle = {
   flex: 1,
@@ -33,6 +34,8 @@ const rejectStyle = {
 };
 
 export const FileUpload = () => {
+  const [imgEndpoint, setImgEndpoint] = useState({} as ImgEndpoints);
+
   const {
     getRootProps,
     getInputProps,
@@ -57,12 +60,11 @@ export const FileUpload = () => {
     [isFocused, isDragAccept, isDragReject]
   );
 
-  const files = acceptedFiles.map((file) => <p key={file.path}>{file.path}</p>);
-
+  const files = acceptedFiles.map((file) => <p key={file.name}>{file.name}</p>);
+  //if (files.length === 1) sendFile(acceptedFiles[0], setImgEndpoint);
   // TODO: parse file to get dates
-
   return (
-    <div className="container">
+    <div className="container" style={{ backgroundColor: "white" }}>
       <div {...getRootProps({ style })}>
         <input {...getInputProps()} />
         {isDragActive ? (
@@ -73,18 +75,30 @@ export const FileUpload = () => {
       </div>
 
       {files.length > 0 ? (
-        <div style={{ backgroundColor: "white" }}>
-          <aside>
+        <>
+          <div style={{ color: "black" }}>
             <h4>File</h4>
             <p>{files}</p>
-          </aside>
+          </div>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DatePicker />
             <DatePicker />
           </LocalizationProvider>
-        </div>
+          <button onClick={() => sendFile(acceptedFiles[0], setImgEndpoint)}>
+            upload
+          </button>
+        </>
       ) : (
         <></>
+      )}
+
+      {imgEndpoint.activity ? (
+        <>
+          <img src={imgEndpoint.activity} alt="activity img" />
+          <img src={imgEndpoint.sleep} alt="sleep img" />
+        </>
+      ) : (
+        <p style={{ backgroundColor: "black" }}>ne dela</p>
       )}
     </div>
   );
