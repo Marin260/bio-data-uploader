@@ -64,9 +64,10 @@ func FileUpload(c *gin.Context){
 
 	c.Writer.Header().Set("Content-Type", "application/json")
 	c.JSON(http.StatusOK, gin.H{
-		"message": fileName,
+		"fileName": fileName,
 	})
 
+	// TODO: imgs and csv are not needed, just return the xslx file
 	// Remove all created files to free up space
 	log.Println("Deleting files created by the python script")
 	scriptOutDir := strings.Split(fileName, "Ct")[1]
