@@ -41,21 +41,26 @@ def find_amount_of_sleep(df):
 
 # TODO: read these dates from a file
 
-file_name = '121123bobiCtM008'
+
+INPUT_FRONTEND = {
+    'file_path': 'dummy_df.csv',
+    'file_name': '121123bobiCtM008',
+    'start_date': '2023/11/13',
+    'end_date': '2023/11/18'
+}
 # cols: 1-16 (CsCh)
-times_list = [['2023-11-13 08:00:00', '2023-11-14 07:59:00']]
+# time format : YYYY/MM/DD
+start_time = '08:00:00'
+end_time = '07:59:00'
 
-# Get flags from cmd
-# parser = argparse.ArgumentParser()
-# parser.add_argument("-fn", "--filename", help="Name prefix of the image that is going to get created")
-# args = parser.parse_args()
+start_date_time = f'{INPUT_FRONTEND["start_date"]} {start_time}'
+end_date_time = f'{INPUT_FRONTEND["end_date"]} {end_time}'
 
-df = pd.read_csv('dummy_df.csv', sep='\t', header=None, index_col=0)
+df = pd.read_csv(INPUT_FRONTEND['file_path'], sep='\t', header=None, index_col=0)
+
 df['datetime'] = pd.to_datetime(df.iloc[:, 0] + ' ' + df.iloc[:, 1])
 df.set_index('datetime', inplace=True)
 
-## here we might crop data from start to end of all experiment to lower memory usage
-# df = df.loc[(df.index > START) & (df.index <= END)]
 df.drop(df.columns[:9], axis=1, inplace=True)
 df.columns = list(range(1, 33))
 
