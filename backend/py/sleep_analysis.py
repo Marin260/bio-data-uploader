@@ -3,128 +3,50 @@ Created on Mon Oct  7 23:19:07 2019
 @author: icecream boi
 """
 # %%
-import sys
-import os
 
 import argparse
-
-import pandas as pd
-import matplotlib.pyplot as plt
+import time 
 from dateutil import parser
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
 
 
+def get_mean_and_sem_by_hour(df):
+    df_mean = df.resample('H').mean()  # .mean(axis=0)
+    df_sem = df.resample('H').sem()  # .mean(axis=0)
 
-def preproc(df, start, end):
-    df['datetime'] = pd.to_datetime(df.iloc[:, 0] + ' ' + df.iloc[:, 1])
-    df = df.set_index(df['datetime'])
-    df = df.loc[(df['datetime'] > start) & (df['datetime'] <= end)]
-
-    df.drop(df.columns[[0, 1, 2, 3, 4, 5, 6, 7, 8]], axis=1, inplace=True)
-    df = df.drop(columns=['datetime'])
-
-    df.columns = list(range(1, 33))
-
-    return df
+    return df_mean, df_sem
 
 
-def load_files_from_folder(path, file_format='.txt'):
-    # import folder sa csvomima
-    if not os.listdir(path):
-        sys.exit('Directory is empty')
+def find_amount_of_sleep(df):
+    np_data = df.to_numpy()
 
-    files_dict = {}
+    sleep_mask = np.zeros_like(np_data, dtype=int)
 
-    for r, d, f in os.walk(path):
+    for col in range(np_data.shape[1]):
+        count_zeros = np.zeros(np_data.shape[0], dtype=int)
+        
+        for i in range(4, np_data.shape[0]):
+            if np.all(np_data[i-4:i+1, col] == 0):
+                count_zeros[i] = 1
+        
+        sleep_mask[:, col] = count_zeros
 
-        for file in f:
-            if file_format in file:
-                files_dict.update({file: os.path.join(r, file)})
+    sleep_mask[:4] = 0
+    df_sleeping = pd.DataFrame(sleep_mask, columns=df.columns, index=df.index)
+    df_sleeping = df_sleeping.resample('H').sum()
+    return df_sleeping
 
-    return files_dict
-
-
-
-DATA_PATH = "./../output/"
-SAVE_PATH = "./../output/"
-
-
-
-files = load_files_from_folder(DATA_PATH)
-
-print("the files: ", files)
 
 # TODO: read these dates from a file
-times = [['2023-03-01 08:00:00', '2023-03-02 07:59:00'],
-         ['2023-03-02 08:00:00', '2023-03-03 07:59:00'],
-         ['2023-03-03 08:00:00', '2023-03-02 07:59:00'],
-         ['2023-03-04 08:00:00', '2023-03-05 07:59:00'],
-         ['2023-03-05 08:00:00', '2023-03-06 07:59:00'],
-         ['2023-03-06 08:00:00', '2023-03-07 07:59:00'],
-         ['2023-03-07 08:00:00', '2023-03-08 07:59:00']]
-
-
-for time in times:
-    START, END = time
-
-    for name, path in files.items():
-
-        _, monitor = name.split("Ct")
-        monitor = monitor.replace(".txt", "")
-
-        if not os.path.exists("{}/{}".format(SAVE_PATH, monitor)):
-            os.makedirs("{}/{}".format(SAVE_PATH, monitor))
-
-        df = pd.read_csv(path, sep='\t', header=None, index_col=0)
-
-        FILE_NAME = "{}/{}/{}_to_{}".format(SAVE_PATH, monitor,
-                                            parser.parse(START).strftime(
-                                                "%d_%m_%y_%H_%M"),
-                                            parser.parse(END).strftime(
-                                                "%d_%m_%y_%H_%M"))
-
-        df = preproc(df, START, END)
-
-        df_mean = df.resample('H').mean()  # .mean(axis=0)
-        df_sem = df.resample('H').sem()  # .mean(axis=0)
-
-        df_mean.to_csv("{}_mean.csv".format(FILE_NAME))
-        df_sem.to_csv("{}_se.csv".format(FILE_NAME))
-
-        if not os.path.exists("{}/sleep/{}".format(SAVE_PATH, monitor)):
-            os.makedirs("{}/sleep/{}".format(SAVE_PATH, monitor))
-
-        FILE_NAME = "{}/sleep/{}/{}_to_{}".format(SAVE_PATH, monitor,
-                                                  parser.parse(START).strftime(
-                                                      "%d_%m_%y_%H_%M"),
-                                                  parser.parse(END).strftime(
-                                                      "%d_%m_%y_%H_%M"))
-
-        df_list = []
-
-        for column in df:
-            col = df[column]
-            column_sleeping = []
-            for x in range(len(col)):
-                window = x+5
-                if window < len(col):
-                    selected = col[x:window]
-                    if sum(selected) == 0:
-                        column_sleeping.append('1')
-                    else:
-                        column_sleeping.append('0')
-            df_list.append(column_sleeping)
-
-        df_sleeping = pd.DataFrame(df_list).T
-
-        index_df = df.index
-        index_df = index_df.drop(index_df[0:5])
-
-        df_sleeping = df_sleeping.set_index(index_df)
-        df_sleeping = df_sleeping.astype(str).astype(int)
-        df_sleeping = df_sleeping.resample('H').sum()  # .mean(axis=1)
-        # df_sleeping = df_sleeping.apply(lambda x: x/60*100)
-
-        df_sleeping.to_csv("{}_sleep.csv".format(FILE_NAME))
+times_list = [['2023-03-01 08:00:00', '2023-03-02 07:59:00'],
+            ['2023-03-02 08:00:00', '2023-03-03 07:59:00'],
+            ['2023-03-03 08:00:00', '2023-03-02 07:59:00'],
+            ['2023-03-04 08:00:00', '2023-03-05 07:59:00'],
+            ['2023-03-05 08:00:00', '2023-03-06 07:59:00'],
+            ['2023-03-06 08:00:00', '2023-03-07 07:59:00'],
+            ['2023-03-07 08:00:00', '2023-03-08 07:59:00']]
 
 # Get flags from cmd
 parser = argparse.ArgumentParser()
@@ -132,28 +54,51 @@ parser.add_argument("-fn", "--filename", help="Name prefix of the image that is 
 
 args = parser.parse_args()
 
+# this is going to be one csv file now 
+# files = load_files_from_folder(DATA_PATH)
 
-# %%
-plt.ylim(0, 100)
+def some_input_foo():
+    ## dummy foo
+    return file_name, file_path
 
-# Add title and axis names
-plt.title('Average amount of Drosophila sleep per hour')
-plt.ylabel('percent(%)')
-plt.xlabel('time')
+## here we should pass file and file name 
+file_name, file_path = some_input_foo()
 
-plt.plot(df_sleeping, 'k-^')
-plt.gcf().autofmt_xdate()
-plt.grid()
-plt.savefig('./../output/{}sleep.png'.format(args.filename+"-"))
+if file_name.endswith('.txt'):
+    file_name = file_name.replace(".txt", "")
 
-plt.show()
+elif file_name.endswith('.csv'):
+    file_name = file_name.replace(".csv", "")
 
-plt.title('Average amount of Drosophila activity per hour')
-plt.ylabel('mean')
-plt.xlabel('time')
+else:
+    raise ValueError("Not a valid file format")
 
-plt.plot(df_mean.mean(axis=1), 'r-o')
-plt.gcf().autofmt_xdate()
-plt.grid()
-plt.savefig('./../output/{}activity.png'.format(args.filename+"-"))
-plt.show()
+
+df = pd.read_csv('dummy_df.csv', sep='\t', header=None, index_col=0)
+
+df['datetime'] = pd.to_datetime(df.iloc[:, 0] + ' ' + df.iloc[:, 1])
+df.set_index('datetime', inplace=True)
+
+## here we might crop data from start to end of all experiment to lower memory usage
+# df = df.loc[(df.index > START) & (df.index <= END)]
+df.drop(df.columns[:9], axis=1, inplace=True)
+df.columns = list(range(1, 33))
+
+
+for time in times_list:
+    START, END = time
+    df_ = df.loc[(df.index > START) & (df.index <= END)]
+
+    start_time = parser.parse(START).strftime("%d_%m_%y_%H_%M")
+    ent_time =  parser.parse(END).strftime("%d_%m_%y_%H_%M")
+
+    FILE_NAME = f"{file_name}_{start_time}_to_{ent_time}"
+    df_mean_file_name = f"{file_name}_{start_time}_to_{ent_time}_mean"
+    df_sem_file_name = f"{file_name}_{start_time}_to_{ent_time}_sem"
+    df_sleep_file_name = f"{file_name}_{start_time}_to_{ent_time}_sleep"
+    
+    ##  we need add to this filenames _mean and _sem
+    df_mean, df_sem = get_mean_and_sem_by_hour(df_)
+
+    ## same for sleeping, we should add _sleep
+    df_sleeping = find_amount_of_sleep(df_)
