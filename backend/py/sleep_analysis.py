@@ -40,42 +40,17 @@ def find_amount_of_sleep(df):
 
 
 # TODO: read these dates from a file
-times_list = [['2023-03-01 08:00:00', '2023-03-02 07:59:00'],
-            ['2023-03-02 08:00:00', '2023-03-03 07:59:00'],
-            ['2023-03-03 08:00:00', '2023-03-02 07:59:00'],
-            ['2023-03-04 08:00:00', '2023-03-05 07:59:00'],
-            ['2023-03-05 08:00:00', '2023-03-06 07:59:00'],
-            ['2023-03-06 08:00:00', '2023-03-07 07:59:00'],
-            ['2023-03-07 08:00:00', '2023-03-08 07:59:00']]
+
+file_name = '121123bobiCtM008'
+# cols: 1-16 (CsCh)
+times_list = [['2023-11-13 08:00:00', '2023-11-14 07:59:00']]
 
 # Get flags from cmd
-parser = argparse.ArgumentParser()
-parser.add_argument("-fn", "--filename", help="Name prefix of the image that is going to get created")
-
-args = parser.parse_args()
-
-# this is going to be one csv file now 
-# files = load_files_from_folder(DATA_PATH)
-
-def some_input_foo():
-    ## dummy foo
-    return file_name, file_path
-
-## here we should pass file and file name 
-file_name, file_path = some_input_foo()
-
-if file_name.endswith('.txt'):
-    file_name = file_name.replace(".txt", "")
-
-elif file_name.endswith('.csv'):
-    file_name = file_name.replace(".csv", "")
-
-else:
-    raise ValueError("Not a valid file format")
-
+# parser = argparse.ArgumentParser()
+# parser.add_argument("-fn", "--filename", help="Name prefix of the image that is going to get created")
+# args = parser.parse_args()
 
 df = pd.read_csv('dummy_df.csv', sep='\t', header=None, index_col=0)
-
 df['datetime'] = pd.to_datetime(df.iloc[:, 0] + ' ' + df.iloc[:, 1])
 df.set_index('datetime', inplace=True)
 
@@ -84,21 +59,19 @@ df.set_index('datetime', inplace=True)
 df.drop(df.columns[:9], axis=1, inplace=True)
 df.columns = list(range(1, 33))
 
-
-for time in times_list:
-    START, END = time
+for time_start_end in times_list:
+    START, END = time_start_end
     df_ = df.loc[(df.index > START) & (df.index <= END)]
-
     start_time = parser.parse(START).strftime("%d_%m_%y_%H_%M")
     ent_time =  parser.parse(END).strftime("%d_%m_%y_%H_%M")
-
-    FILE_NAME = f"{file_name}_{start_time}_to_{ent_time}"
-    df_mean_file_name = f"{file_name}_{start_time}_to_{ent_time}_mean"
-    df_sem_file_name = f"{file_name}_{start_time}_to_{ent_time}_sem"
-    df_sleep_file_name = f"{file_name}_{start_time}_to_{ent_time}_sleep"
     
-    ##  we need add to this filenames _mean and _sem
-    df_mean, df_sem = get_mean_and_sem_by_hour(df_)
+    FILE_NAME = f"{file_name}_{start_time}_to_{ent_time}"
 
-    ## same for sleeping, we should add _sleep
-    df_sleeping = find_amount_of_sleep(df_)
+    df_mean, df_sem = get_mean_and_sem_by_hour(df_)
+    df_sleep = find_amount_of_sleep(df_)
+
+    res = {
+        f'{FILE_NAME}_mean': df_mean,
+        f'{FILE_NAME}_sem': df_sem,
+        f'{FILE_NAME}_sleep': df_sleep
+    }
