@@ -35,6 +35,8 @@ const rejectStyle = {
 
 export const FileUpload = () => {
   const [imgEndpoint, setImgEndpoint] = useState({} as ImgEndpoints);
+  const [startDate, setStartDate] = useState(new Date().toLocaleDateString());
+  const [endDate, setEndDate] = useState(new Date().toLocaleDateString());
 
   const {
     getRootProps,
@@ -81,10 +83,27 @@ export const FileUpload = () => {
             <p>{files}</p>
           </div>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DatePicker />
-            <DatePicker />
+            <DatePicker
+              onChange={(date: Date | null) => {
+                if (date !== null)
+                  setStartDate(new Date(date).toLocaleDateString("en-UK"));
+              }}
+            />
+            <DatePicker
+              onChange={(date: Date | null) => {
+                if (date !== null)
+                  setEndDate(new Date(date).toLocaleDateString());
+              }}
+            />
           </LocalizationProvider>
-          <button onClick={() => sendFile(acceptedFiles[0], setImgEndpoint)}>
+          <button
+            onClick={() =>
+              sendFile(acceptedFiles[0], setImgEndpoint, {
+                startDate,
+                endDate,
+              })
+            }
+          >
             upload
           </button>
         </>
@@ -103,3 +122,6 @@ export const FileUpload = () => {
     </div>
   );
 };
+
+// TODO: clean up the frontend (styles, generalize code, etc...)
+// TODO: request created zip to download
