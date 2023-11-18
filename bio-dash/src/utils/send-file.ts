@@ -7,10 +7,18 @@ export type ImgEndpoints = {
 
 export const sendFile = (
   file: File,
-  setImgEndpoint: (value: React.SetStateAction<ImgEndpoints>) => void
+  setImgEndpoint: (value: React.SetStateAction<ImgEndpoints>) => void,
+  timeFrame: {
+    startDate: string;
+    endDate: string;
+  }
 ) => {
   const formData = new FormData();
   formData.append("file", file);
+  formData.append("start", timeFrame.startDate);
+  formData.append("end", timeFrame.endDate);
+
+  console.log(formData);
 
   fetch(BACKEND_URL + "/file-upload", {
     method: "post",
