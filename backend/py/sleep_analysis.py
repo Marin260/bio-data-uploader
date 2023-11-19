@@ -5,13 +5,24 @@ Created on Mon Oct  7 23:19:07 2019
 # %%
 import os 
 import zipfile
+import json
 
 from datetime import datetime, timedelta
 from dateutil import parser
 
+import argparse
+
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
+
+
+def preproc_dataframe(start_date_time, end_date_time):
+    df['datetime'] = pd.to_datetime(df.iloc[:, 0] + ' ' + df.iloc[:, 1])
+    df.set_index('datetime', inplace=True)
+    df.drop(df.columns[:9], axis=1, inplace=True)
+    df.columns = list(range(1, 33))
+
+    return df 
 
 
 def create_datetime_interval(start_date_time, end_date_time):
@@ -64,43 +75,47 @@ def find_amount_of_sleep(df):
     return df_sleeping
 
 
-INPUT_FRONT = {
-    'file_path': 'dummy_df.csv',
-    'file_name': '121123bobiCtM008',
-    'start_date': '2023/11/13',
-    'end_date': '2023/11/18'
-}
+if __name__ == "__main__":
+    argParser = argparse.ArgumentParser()
+    argParser.add_argument("-fn", "--filename", help="Name prefix of the image that is going to get created")
+    args = argParser.parse_args()
 
-SAVE_DIR = './../output/'
+    SAVE_DIR = './../output/'
 
-start_date_time =  parser.parse( f'{INPUT_FRONT["start_date"]} 08:00:00')
-end_date_time =  parser.parse(f'{INPUT_FRONT["end_date"]} 07:59:00')
+    INPUT_FRONT = {
+        'file_path': 'dummy_df.csv',
+        'file_name': '121123bobiCtM008',
+        'start_date': '2023/11/13',
+        'end_date': '2023/11/18'
+    }
 
-df = pd.read_csv(INPUT_FRONT['file_path'], sep='\t', header=None, index_col=0)
-df['datetime'] = pd.to_datetime(df.iloc[:, 0] + ' ' + df.iloc[:, 1])
-df.set_index('datetime', inplace=True)
-df.drop(df.columns[:9], axis=1, inplace=True)
-df.columns = list(range(1, 33))
+    with open(SAVE_DIR + args.filename, 'r') as f:
+        INPUT_FRONT = json.load(f)
+        print(INPUT_FRONT)
 
-times_list = create_datetime_interval(start_date_time, end_date_time)
+    SCRIPT_OUTPUT = os.path.join(SAVE_DIR, INPUT_FRONT['file_name'])
+    os.makedirs(SCRIPT_OUTPUT, exist_ok=True)
 
-SCRIPT_OUTPUT = os.path.join(SAVE_DIR, INPUT_FRONT['file_name'])
-os.makedirs(SCRIPT_OUTPUT, exist_ok=True)
+    start_date_time =  parser.parse( f'{INPUT_FRONT["start_date"]} 08:00:00')
+    end_date_time =  parser.parse(f'{INPUT_FRONT["end_date"]} 07:59:00')
 
-for time_start_end in times_list:
-    START, END = time_start_end
-    df_ = df.loc[(df.index > START) & (df.index <= END)]
-    start_time = parser.parse(START).strftime("%d_%m_%y_%H_%M")
-    ent_time =  parser.parse(END).strftime("%d_%m_%y_%H_%M")
+    times_list = create_datetime_interval(start_date_time, end_date_time)
+
+    df = pd.read_csv(INPUT_FRONT['file_path'], sep='\t', header=None, index_col=0)
+    df = preproc_dataframe(start_date_time, end_date_time)
+
+    for time_start_end in times_list:
+        START, END = time_start_end
+        df_ = df.loc[(df.index > START) & (df.index <= END)]
+        start_time = parser.parse(START).strftime("%d_%m_%y_%H_%M")
+        ent_time =  parser.parse(END).strftime("%d_%m_%y_%H_%M")
+        
+        df_mean, df_sem = get_mean_and_sem_by_hour(df_)
+        df_sleep = find_amount_of_sleep(df_)
     
-    FILE_NAME = f"{start_time}_to_{ent_time}"
-
-    df_mean, df_sem = get_mean_and_sem_by_hour(df_)
-    df_sleep = find_amount_of_sleep(df_)
-   
-    df_mean.to_csv(os.path.join(SCRIPT_OUTPUT, f'{FILE_NAME}_mean.csv'))
-    df_sem.to_csv(os.path.join(SCRIPT_OUTPUT, f'{FILE_NAME}_sem.csv'))
-    df_sleep.to_csv(os.path.join(SCRIPT_OUTPUT, f'{FILE_NAME}_sleep.csv'))
-
-
-zip_dir(SCRIPT_OUTPUT, INPUT_FRONT['file_name'])
+        FILE_NAME = f"{start_time}_to_{ent_time}"
+        df_mean.to_csv(os.path.join(SCRIPT_OUTPUT, f'{FILE_NAME}_mean.csv'))
+        df_sem.to_csv(os.path.join(SCRIPT_OUTPUT, f'{FILE_NAME}_sem.csv'))
+        df_sleep.to_csv(os.path.join(SCRIPT_OUTPUT, f'{FILE_NAME}_sleep.csv'))
+        
+    zip_dir(SCRIPT_OUTPUT, INPUT_FRONT['file_name'])
