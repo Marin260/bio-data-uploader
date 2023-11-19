@@ -25,6 +25,7 @@ def preproc_dataframe(start_date_time, end_date_time):
     return df 
 
 
+
 def create_datetime_interval(start_date_time, end_date_time):
     times_list = []
     while start_date_time < end_date_time:
@@ -75,12 +76,14 @@ def find_amount_of_sleep(df):
     return df_sleeping
 
 
+
 if __name__ == "__main__":
     argParser = argparse.ArgumentParser()
     argParser.add_argument("-fn", "--filename", help="Name prefix of the image that is going to get created")
     args = argParser.parse_args()
 
     SAVE_DIR = './../output/'
+
 
     INPUT_FRONT = {
         'file_path': 'dummy_df.csv',

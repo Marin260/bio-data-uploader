@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -12,9 +13,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// TODO: log activity
+type ScriptInput struct {
+	FilePath  string `json:"file_path"`
+	FileName  string `json:"file_name"`
+	StartDate string `json:"start_date"`
+	EndDate   string `json:"end_date"`
+}
+
 func FileUpload(c *gin.Context){
 	log.Println("file-upload-controller::FileUpload() - Enter")
+
 	// Get file from form
 	fmt.Println(c.Request)
 	log.Println("Reading the request")
@@ -34,7 +42,8 @@ func FileUpload(c *gin.Context){
 
 	// Create new local file
 	log.Println("Creating a new file")
-	dstFile, err := os.Create("./../output/" + handler.Filename)
+	fileName := strings.TrimSuffix(handler.Filename, ".txt")
+	dstFile, err := os.Create("./../output/" + fileName + ".csv")
 	if err != nil {
 		customError := fmt.Sprintf("Error while creating a local file - %s", err)
 		ErrorHandler(c, BackendError{err: customError, message: "Internal Server Error", code: http.StatusInternalServerError})
@@ -50,12 +59,33 @@ func FileUpload(c *gin.Context){
 		ErrorHandler(c, BackendError{err: customError, message: "Internal Server Error", code: http.StatusInternalServerError})
 		return 
 	}
-
-	fileName := strings.TrimSuffix(handler.Filename, ".txt")
+	
 	// Run python script
-	log.Println("Running Python script")
-	out, err := exec.Command("python3", "../py/sleep_analysis.py", "-fn", fileName).CombinedOutput()
+	startDate := c.Request.FormValue("start")
+	endDate := c.Request.FormValue("end")
+	scriptInputJSON := ScriptInput{FilePath: "./../output/" + fileName + ".csv", FileName: fileName, StartDate: startDate, EndDate: endDate }
+	scriptInputFile, err := os.Create("./../output/" + fileName + ".json")
 	if err != nil {
+		customError := fmt.Sprintf("Error while creating a local file - %s", err)
+		ErrorHandler(c, BackendError{err: customError, message: "Internal Server Error", code: http.StatusInternalServerError})
+		return 
+	}
+	defer scriptInputFile.Close()
+
+	encoder := json.NewEncoder(scriptInputFile)
+	err = encoder.Encode(scriptInputJSON)
+	if err != nil {
+		customError := fmt.Sprintf("Error while encoding json - %s", err)
+		ErrorHandler(c, BackendError{err: customError, message: "Internal Server Error", code: http.StatusInternalServerError})
+		return
+	}
+
+
+	log.Println("Running Python script")
+	out, err := exec.Command("python", "../py/sleep_analysis.py", "-fn", fileName+".json").CombinedOutput()
+	if err != nil {
+		fmt.Println("ALJO ", string(out))
+		fmt.Println("ALJO ", err)
 		customError := fmt.Sprintf("Error while runinng the script - %s", err)
 		ErrorHandler(c, BackendError{err: customError, message: "Internal Server Error", code: http.StatusInternalServerError})
 		return 
@@ -67,14 +97,9 @@ func FileUpload(c *gin.Context){
 		"fileName": fileName,
 	})
 
-	// TODO: imgs and csv are not needed, just return the xslx file
-	// Remove all created files to free up space
-	log.Println("Deleting files created by the python script")
-	scriptOutDir := strings.Split(fileName, "Ct")[1]
-	fmt.Println("This is the out folder Aloooo", scriptOutDir) 
-	os.RemoveAll("./../output/" + scriptOutDir)
-	os.RemoveAll("./../output/sleep")
-	os.Remove("./../output/" + fileName + ".txt")
+	// TODO: clean up the error handling
+	// TODO: clean up the logs
+	// TODO: remove createt files by the script
 
 	log.Println("file-upload-controller::FileUpload() - Exit")
 	return 

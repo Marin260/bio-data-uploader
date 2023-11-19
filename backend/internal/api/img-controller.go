@@ -13,7 +13,9 @@ func Sleep(c *gin.Context) {
 	log.Println("img-controller::Sleep() - Enter")
 
 	filePath := fmt.Sprintf("./../output/%s-sleep.png", c.Params.ByName("name"))
-	c.File(filePath)
+	// NOTE: this is a tmp comment, have to adjust to send zip insted of img
+	//c.File(filePath)
+	c.File("./../output/default.png")
 	
 	log.Println("Removing created png")
 	err := os.Remove(filePath)
@@ -28,7 +30,8 @@ func Activity(c *gin.Context) {
 	log.Println("img-controller::Activity() - Enter")
 
 	filePath := fmt.Sprintf("./../output/%s-activity.png", c.Params.ByName("name"))
-	c.File(filePath)
+	//c.File(filePath)
+	c.File("./../output/default.png")
 
 	log.Println("Removing created png")
 	err := os.Remove(filePath)
