@@ -23,8 +23,7 @@ func BioServer() *gin.Engine{
 
 	r.GET("/ping", api.HealthCheck)
 	r.POST("/file-upload", api.FileUpload)
-	r.GET("/img/sleep/:name", api.Sleep)
-	r.GET("/img/activity/:name", api.Activity)
+	r.GET("/zip/:name", api.Zip)
 
 	return r
 }

@@ -19,7 +19,7 @@ func ErrorHandler(c *gin.Context, err BackendError){
 	fmt.Println(err.err)
 
 	log.Println("handlers::ErrorHandler() - Enter")
-	log.Println("Error - " + err.err)
+	log.Println("handlers::ErrorHandler() - Error - " + err.err)
 	c.JSON(err.code, gin.H{
 		"status": err.code,
 		"error": err.message,
@@ -31,7 +31,7 @@ func MalformedRequest(c *gin.Context, size int){
 	fmt.Println("File size to big")
 
 	log.Println("handlers::MalformedRequest() - Enter")
-	log.Printf("Error - file size to big | size - %d\n", size)
+	log.Printf("handlers::MalformedRequest() - Error - file size to big | size - %d\n", size)
 	c.JSON(http.StatusBadRequest, gin.H{
 		"status": http.StatusBadRequest,
 		"message": "File size to big",
