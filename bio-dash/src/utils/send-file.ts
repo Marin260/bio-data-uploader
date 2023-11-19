@@ -3,6 +3,7 @@ import { BACKEND_URL } from "../constants/env-development";
 export type ImgEndpoints = {
   sleep: string;
   activity: string;
+  zip?: string;
 };
 
 export const sendFile = (
@@ -28,6 +29,7 @@ export const sendFile = (
     setImgEndpoint({
       sleep: BACKEND_URL + "/img/sleep/" + response.fileName,
       activity: BACKEND_URL + "/img/activity/" + response.fileName,
+      zip: BACKEND_URL + "/zip/" + response.fileName,
     });
   });
 };
