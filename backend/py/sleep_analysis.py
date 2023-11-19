@@ -5,13 +5,15 @@ Created on Mon Oct  7 23:19:07 2019
 # %%
 import os 
 import zipfile
+import json
 
 from datetime import datetime, timedelta
 from dateutil import parser
 
+import argparse
+
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 
 
 def create_datetime_interval(start_date_time, end_date_time):
@@ -64,6 +66,13 @@ def find_amount_of_sleep(df):
     return df_sleeping
 
 
+argParser = argparse.ArgumentParser()
+argParser.add_argument("-fn", "--filename", help="Name prefix of the image that is going to get created")
+
+args = argParser.parse_args()
+
+SAVE_DIR = './../output/'
+
 INPUT_FRONT = {
     'file_path': 'dummy_df.csv',
     'file_name': '121123bobiCtM008',
@@ -71,7 +80,9 @@ INPUT_FRONT = {
     'end_date': '2023/11/18'
 }
 
-SAVE_DIR = './../output/'
+with open(SAVE_DIR + args.filename, 'r') as f:
+    INPUT_FRONT = json.load(f)
+    print(INPUT_FRONT)
 
 start_date_time =  parser.parse( f'{INPUT_FRONT["start_date"]} 08:00:00')
 end_date_time =  parser.parse(f'{INPUT_FRONT["end_date"]} 07:59:00')
