@@ -63,7 +63,7 @@ func FileUpload(c *gin.Context){
 	// Run python script
 	startDate := c.Request.FormValue("start")
 	endDate := c.Request.FormValue("end")
-	scriptInputJSON := ScriptInput{FilePath: "./../output/" + fileName, FileName: fileName, StartDate: startDate, EndDate: endDate }
+	scriptInputJSON := ScriptInput{FilePath: "./../output/" + fileName + ".csv", FileName: fileName, StartDate: startDate, EndDate: endDate }
 	scriptInputFile, err := os.Create("./../output/" + fileName + ".json")
 	if err != nil {
 		customError := fmt.Sprintf("Error while creating a local file - %s", err)
@@ -82,8 +82,10 @@ func FileUpload(c *gin.Context){
 
 
 	log.Println("Running Python script")
-	out, err := exec.Command("python", "../py/sleep_analysis.py", "-fn", fileName+".csv").CombinedOutput()
+	out, err := exec.Command("python", "../py/sleep_analysis.py", "-fn", fileName+".json").CombinedOutput()
 	if err != nil {
+		fmt.Println("ALJO ", string(out))
+		fmt.Println("ALJO ", err)
 		customError := fmt.Sprintf("Error while runinng the script - %s", err)
 		ErrorHandler(c, BackendError{err: customError, message: "Internal Server Error", code: http.StatusInternalServerError})
 		return 
