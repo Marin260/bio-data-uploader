@@ -35,8 +35,12 @@ const rejectStyle = {
 
 export const FileUpload = () => {
   const [imgEndpoint, setImgEndpoint] = useState({} as ImgEndpoints);
-  const [startDate, setStartDate] = useState(new Date().toLocaleDateString());
-  const [endDate, setEndDate] = useState(new Date().toLocaleDateString());
+  const [startDate, setStartDate] = useState(
+    new Date().toLocaleDateString("en-UK")
+  );
+  const [endDate, setEndDate] = useState(
+    new Date().toLocaleDateString("en-UK")
+  );
 
   const {
     getRootProps,
@@ -67,15 +71,17 @@ export const FileUpload = () => {
   // TODO: parse file to get dates
   return (
     <div className="container" style={{ backgroundColor: "white" }}>
-      <div {...getRootProps({ style })}>
-        <input {...getInputProps()} />
-        {isDragActive ? (
-          <p>Drop the files here...</p>
-        ) : (
-          <p>Drag and drop some files here, or click to select files</p>
-        )}
-      </div>
-
+      {
+        //@ts-ignore
+        <div {...getRootProps({ style })}>
+          <input {...getInputProps()} />
+          {isDragActive ? (
+            <p>Drop the files here...</p>
+          ) : (
+            <p>Drag and drop some files here, or click to select files</p>
+          )}
+        </div>
+      }
       {files.length > 0 ? (
         <>
           <div style={{ color: "black" }}>
@@ -92,7 +98,7 @@ export const FileUpload = () => {
             <DatePicker
               onChange={(date: Date | null) => {
                 if (date !== null)
-                  setEndDate(new Date(date).toLocaleDateString());
+                  setEndDate(new Date(date).toLocaleDateString("en-UK"));
               }}
             />
           </LocalizationProvider>
@@ -111,17 +117,16 @@ export const FileUpload = () => {
         <></>
       )}
 
-      {imgEndpoint.activity ? (
+      {imgEndpoint.activity && (
         <>
-          <img src={imgEndpoint.activity} alt="activity img" />
-          <img src={imgEndpoint.sleep} alt="sleep img" />
+          <br />
+          <a href={imgEndpoint.zip} download="aljo">
+            Download Results
+          </a>
         </>
-      ) : (
-        <p style={{ backgroundColor: "black" }}>ne dela</p>
       )}
     </div>
   );
 };
 
 // TODO: clean up the frontend (styles, generalize code, etc...)
-// TODO: request created zip to download
