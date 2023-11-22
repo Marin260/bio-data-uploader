@@ -129,4 +129,5 @@ export const FileUpload = () => {
   );
 };
 
+// TODO: get zip by fetch to avoid one time download
 // TODO: clean up the frontend (styles, generalize code, etc...)
