@@ -19,14 +19,13 @@
 
 # Go workspace file
 go.work
-
+bin
 venv
-output
+output/*
 bio
-logs
 *.log
 # Logs
-logs
+logs/*
 *.log
 npm-debug.log*
 yarn-debug.log*
