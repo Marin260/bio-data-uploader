@@ -80,8 +80,10 @@ func FileUpload(c *gin.Context){
 	
 	// Run python script
 	log.Println("file-upload-controller::FileUpload() - Running Python script")
-	_, err = exec.Command("python", "../py/sleep_analysis.py", "-fn", fileName+".json").CombinedOutput()
+	out, err := exec.Command("python3", "../py/sleep_analysis.py", "-fn", fileName+".json").CombinedOutput()
 	if err != nil {
+		fmt.Println(string(out))
+		fmt.Println(err)
 		customError := fmt.Sprintf("Error while runinng the script - %s", err)
 		ErrorHandler(c, BackendError{err: customError, message: "Internal Server Error", code: http.StatusInternalServerError})
 		return 
@@ -94,9 +96,6 @@ func FileUpload(c *gin.Context){
 	// Removing all the created files
 	defer removeFiles(fileName, scriptInputFile, dstFile)
 	fmt.Println(fileName)
-	//err = os.Remove("./../output/" + fileName + ".json")
-	//err = os.Remove("./../output/" + fileName + ".csv")
-
 	// TODO: clean up the error handling
 	// TODO: remove createt files by the script
 
