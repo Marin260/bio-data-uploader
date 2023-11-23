@@ -1,9 +1,11 @@
 import { useMemo, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { ZipEndpoints, sendFile } from "../utils/send-file";
+import { readFile } from "../utils/read-file";
+import { CircularProgress } from "@mui/material";
 
 const baseStyle = {
   flex: 1,
@@ -35,12 +37,9 @@ const rejectStyle = {
 
 export const FileUpload = () => {
   const [imgEndpoint, setImgEndpoint] = useState({} as ZipEndpoints);
-  const [startDate, setStartDate] = useState(
-    new Date().toLocaleDateString("en-UK")
-  );
-  const [endDate, setEndDate] = useState(
-    new Date().toLocaleDateString("en-UK")
-  );
+  const [startDate, setStartDate] = useState(new Date());
+  const [endDate, setEndDate] = useState(new Date());
+  const [loadingState, setLoadingState] = useState(false);
 
   const {
     getRootProps,
@@ -54,6 +53,11 @@ export const FileUpload = () => {
     accept: { "text/plain": [".txt"] },
     maxFiles: 1,
     maxSize: 1000000,
+    onDrop: (files: File[]) => {
+      files.forEach((file) => {
+        readFile(file, setStartDate, setEndDate);
+      });
+    },
   });
 
   const style = useMemo(
@@ -67,8 +71,7 @@ export const FileUpload = () => {
   );
 
   const files = acceptedFiles.map((file) => <p key={file.name}>{file.name}</p>);
-  //if (files.length === 1) sendFile(acceptedFiles[0], setImgEndpoint);
-  // TODO: parse file to get dates
+
   return (
     <div className="container" style={{ backgroundColor: "white" }}>
       {
@@ -88,25 +91,30 @@ export const FileUpload = () => {
             <h4>File</h4>
             <p>{files}</p>
           </div>
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <LocalizationProvider dateAdapter={AdapterDateFns}>
             <DatePicker
+              minDate={startDate}
+              maxDate={endDate}
+              value={startDate}
               onChange={(date: Date | null) => {
-                if (date !== null)
-                  setStartDate(new Date(date).toLocaleDateString("en-UK"));
+                if (date !== null) setStartDate(new Date(date));
               }}
             />
             <DatePicker
+              minDate={startDate}
+              maxDate={endDate}
+              value={endDate}
               onChange={(date: Date | null) => {
-                if (date !== null)
-                  setEndDate(new Date(date).toLocaleDateString("en-UK"));
+                if (date !== null) setEndDate(new Date(date));
               }}
             />
           </LocalizationProvider>
+          <br />
           <button
             onClick={() =>
-              sendFile(acceptedFiles[0], setImgEndpoint, {
-                startDate,
-                endDate,
+              sendFile(acceptedFiles[0], setImgEndpoint, setLoadingState, {
+                startDate: startDate.toLocaleDateString("en-UK"),
+                endDate: endDate.toLocaleDateString("en-UK"),
               })
             }
           >
@@ -123,6 +131,13 @@ export const FileUpload = () => {
           <a href={imgEndpoint.zip} download="aljo">
             Download Results
           </a>
+        </>
+      )}
+
+      {loadingState && (
+        <>
+          <br />
+          <CircularProgress />
         </>
       )}
     </div>
