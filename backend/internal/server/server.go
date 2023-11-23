@@ -1,6 +1,10 @@
 package server
 
 import (
+	"io"
+	"log"
+	"os"
+
 	"example.com/packages/internal/api"
 	"github.com/gin-gonic/gin"
 )
@@ -10,9 +14,10 @@ func BioServer() *gin.Engine{
 	r := gin.Default()
 
 	// Create a log file
-	//logfile, _ := os.Create("./../logs/bio-request-logger.log")
-	//gin.DefaultWriter = io.MultiWriter(logfile)
-	//log.SetOutput(io.MultiWriter(logfile, gin.DefaultWriter))
+	logfile, _ := os.Create("./logs/bio-request-logger.log")
+	
+	gin.DefaultWriter = io.MultiWriter(logfile)
+	log.SetOutput(io.MultiWriter(logfile, gin.DefaultWriter))
 
 	r.Use(CustomHeaders())
 	r.Use(gin.LoggerWithFormatter(api.Logger))

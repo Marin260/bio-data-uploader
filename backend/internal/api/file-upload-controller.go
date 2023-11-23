@@ -20,6 +20,8 @@ type ScriptInput struct {
 	EndDate   string `json:"end_date"`
 }
 
+const outputPath = "./output/"
+
 func FileUpload(c *gin.Context){
 	log.Println("file-upload-controller::FileUpload() - Enter")
 
@@ -42,7 +44,7 @@ func FileUpload(c *gin.Context){
 	// Create new local file
 	log.Println("file-upload-controller::FileUpload() - Creating a new file")
 	fileName := strings.TrimSuffix(handler.Filename, ".txt")
-	dstFile, err := os.Create("./../output/" + fileName + ".csv")
+	dstFile, err := os.Create(outputPath + fileName + ".csv")
 	if err != nil {
 		customError := fmt.Sprintf("Error while creating a local file - %s", err)
 		ErrorHandler(c, BackendError{err: customError, message: "Internal Server Error", code: http.StatusInternalServerError})
@@ -62,8 +64,8 @@ func FileUpload(c *gin.Context){
 	log.Println("file-upload-controller::FileUpload() - Creating json input")
 	startDate := c.Request.FormValue("start")
 	endDate := c.Request.FormValue("end")
-	scriptInputJSON := ScriptInput{FilePath: "./../output/" + fileName + ".csv", FileName: fileName, StartDate: startDate, EndDate: endDate }
-	scriptInputFile, err := os.Create("./../output/" + fileName + ".json")
+	scriptInputJSON := ScriptInput{FilePath: outputPath + fileName + ".csv", FileName: fileName, StartDate: startDate, EndDate: endDate }
+	scriptInputFile, err := os.Create(outputPath + fileName + ".json")
 	if err != nil {
 		customError := fmt.Sprintf("Error while creating a local file - %s", err)
 		ErrorHandler(c, BackendError{err: customError, message: "Internal Server Error", code: http.StatusInternalServerError})
@@ -80,7 +82,7 @@ func FileUpload(c *gin.Context){
 	
 	// Run python script
 	log.Println("file-upload-controller::FileUpload() - Running Python script")
-	out, err := exec.Command("python3", "../py/sleep_analysis.py", "-fn", fileName+".json").CombinedOutput()
+	out, err := exec.Command("python3", "./py/sleep_analysis.py", "-fn", fileName+".json").CombinedOutput()
 	if err != nil {
 		fmt.Println(string(out))
 		fmt.Println(err)
@@ -110,11 +112,11 @@ func removeFiles(fileName string, jsonFile *os.File, csvFile *os.File) {
 	csvFile.Close()
 
 	log.Println("file-upload-controller::removeFiles() - Removing files")
-	err := os.Remove("./../output/" + fileName + ".json")
+	err := os.Remove(outputPath + fileName + ".json")
 	if err != nil {
 		log.Println("file-upload-controller::removeFiles() - Error while removing files:", err)
 	}
-	err = os.Remove("./../output/" + fileName + ".csv")
+	err = os.Remove(outputPath + fileName + ".csv")
 	if err != nil {
 		log.Println("file-upload-controller::removeFiles() - Error while removing files:", err)
 	}
