@@ -13,7 +13,7 @@ func Zip(c *gin.Context){
 	log.Println("file-controller::Zip() - Enter")
 
 	// Sending file
-	filePath := fmt.Sprintf("./../output/%s.zip", c.Params.ByName("name"))
+	filePath := fmt.Sprintf("./output/%s.zip", c.Params.ByName("name"))
 	c.File(filePath)
 
 	// Delete zip

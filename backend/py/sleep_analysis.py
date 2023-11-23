@@ -82,7 +82,7 @@ if __name__ == "__main__":
     argParser.add_argument("-fn", "--filename", help="Name prefix of the image that is going to get created")
     args = argParser.parse_args()
 
-    SAVE_DIR = './../output/'
+    SAVE_DIR = './output/'
 
 
     INPUT_FRONT = {

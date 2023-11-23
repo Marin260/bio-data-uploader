@@ -8,7 +8,7 @@ COPY ./ ./
 RUN mkdir /app/output
 RUN mkdir /app/logs
 
-RUN go build -o bin ./cmd
+RUN go build -o ./cmd/bin ./cmd
 
 # Python env
 RUN apt-get update && apt-get install -y python3 python3-venv python3-pip
