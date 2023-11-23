@@ -31,6 +31,6 @@ func BioServer() *gin.Engine{
 
 func CustomHeaders() gin.HandlerFunc {
 	return func(c *gin.Context){
-		c.Writer.Header().Set("Access-Control-Allow-Origin", "https://bio-dash.netlify.app/")
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "https://bio-dash.netlify.app")
 	}
 }
