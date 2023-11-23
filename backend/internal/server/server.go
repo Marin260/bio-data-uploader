@@ -11,7 +11,8 @@ import (
 
 // TODO: add basic auth/basic JWT?
 func BioServer() *gin.Engine{
-	r := gin.Default()
+	gin.SetMode(gin.ReleaseMode)
+	r := gin.New()
 
 	// Create a log file
 	logfile, _ := os.Create("./logs/bio-request-logger.log")
