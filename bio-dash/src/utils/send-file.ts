@@ -1,14 +1,10 @@
-import { BACKEND_URL } from "../constants/env-development";
-
-export type ImgEndpoints = {
-  sleep: string;
-  activity: string;
-  zip?: string;
+export type ZipEndpoints = {
+  zip: string;
 };
 
 export const sendFile = (
   file: File,
-  setImgEndpoint: (value: React.SetStateAction<ImgEndpoints>) => void,
+  setImgEndpoint: (value: React.SetStateAction<ZipEndpoints>) => void,
   timeFrame: {
     startDate: string;
     endDate: string;
@@ -21,15 +17,17 @@ export const sendFile = (
 
   console.log(formData);
 
-  fetch(BACKEND_URL + "/file-upload", {
+  const BACKEND = import.meta.env.PROD
+    ? import.meta.env.VITE_BACKEND_URL
+    : "http://localhost:8080";
+
+  fetch(BACKEND + "/file-upload", {
     method: "post",
     body: formData,
   }).then(async (val) => {
     const response: { fileName: string } = await val.json();
     setImgEndpoint({
-      sleep: BACKEND_URL + "/img/sleep/" + response.fileName,
-      activity: BACKEND_URL + "/img/activity/" + response.fileName,
-      zip: BACKEND_URL + "/zip/" + response.fileName,
+      zip: BACKEND + "/zip/" + response.fileName,
     });
   });
 };
