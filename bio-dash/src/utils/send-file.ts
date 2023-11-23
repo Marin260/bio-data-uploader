@@ -5,6 +5,7 @@ export type ZipEndpoints = {
 export const sendFile = (
   file: File,
   setImgEndpoint: (value: React.SetStateAction<ZipEndpoints>) => void,
+  setLoadingState: (value: React.SetStateAction<boolean>) => void,
   timeFrame: {
     startDate: string;
     endDate: string;
@@ -21,6 +22,8 @@ export const sendFile = (
     ? import.meta.env.VITE_BACKEND_URL
     : "http://localhost:8080";
 
+  setLoadingState(true);
+
   fetch(BACKEND + "/file-upload", {
     method: "post",
     body: formData,
@@ -29,5 +32,6 @@ export const sendFile = (
     setImgEndpoint({
       zip: BACKEND + "/zip/" + response.fileName,
     });
+    setLoadingState(false);
   });
 };
