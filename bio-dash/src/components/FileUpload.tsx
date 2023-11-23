@@ -3,7 +3,7 @@ import { useDropzone } from "react-dropzone";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import { ImgEndpoints, sendFile } from "../utils/send-file";
+import { ZipEndpoints, sendFile } from "../utils/send-file";
 
 const baseStyle = {
   flex: 1,
@@ -34,7 +34,7 @@ const rejectStyle = {
 };
 
 export const FileUpload = () => {
-  const [imgEndpoint, setImgEndpoint] = useState({} as ImgEndpoints);
+  const [imgEndpoint, setImgEndpoint] = useState({} as ZipEndpoints);
   const [startDate, setStartDate] = useState(
     new Date().toLocaleDateString("en-UK")
   );
@@ -117,7 +117,7 @@ export const FileUpload = () => {
         <></>
       )}
 
-      {imgEndpoint.activity && (
+      {imgEndpoint.zip && (
         <>
           <br />
           <a href={imgEndpoint.zip} download="aljo">
