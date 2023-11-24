@@ -99,7 +99,6 @@ func FileUpload(c *gin.Context){
 	defer removeFiles(fileName, scriptInputFile, dstFile)
 	fmt.Println(fileName)
 	// TODO: clean up the error handling
-	// TODO: remove createt files by the script
 
 	log.Println("file-upload-controller::FileUpload() - Exit")
 	return 
