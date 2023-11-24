@@ -1,0 +1,14 @@
+.file-card {
+  min-width: 275px;
+  max-width: 300px;
+  text-align: left;
+  margin: 0 auto;
+}
+
+.file-card-title {
+  font-weight: 600px;
+  font-size: 18px;
+  background-color: #1976d2;
+  color: white;
+  padding: 0.5rem;
+}

@@ -1,3 +1,5 @@
+import React from "react";
+
 export type ZipEndpoints = {
   zip: string;
 };
@@ -6,6 +8,7 @@ export const sendFile = (
   file: File,
   setImgEndpoint: (value: React.SetStateAction<ZipEndpoints>) => void,
   setLoadingState: (value: React.SetStateAction<boolean>) => void,
+  setOpen: (value: React.SetStateAction<boolean>) => void,
   timeFrame: {
     startDate: string;
     endDate: string;
@@ -27,11 +30,20 @@ export const sendFile = (
   fetch(BACKEND + "/file-upload", {
     method: "post",
     body: formData,
-  }).then(async (val) => {
-    const response: { fileName: string } = await val.json();
-    setImgEndpoint({
-      zip: BACKEND + "/zip/" + response.fileName,
+  })
+    .then(async (val) => {
+      const response: { fileName?: string; error?: string; status?: number } =
+        await val.json();
+      if (response.fileName)
+        setImgEndpoint({
+          zip: BACKEND + "/zip/" + response.fileName,
+        });
+      else if (response.error) {
+        setOpen(true);
+      }
+      setLoadingState(false);
+    })
+    .catch((err) => {
+      console.log(err);
     });
-    setLoadingState(false);
-  });
 };

@@ -1,18 +1,21 @@
 import { useMemo, useState } from "react";
 import { useDropzone } from "react-dropzone";
-import { LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { ZipEndpoints, sendFile } from "../utils/send-file";
 import { readFile } from "../utils/read-file";
-import { CircularProgress } from "@mui/material";
+import { Button, CircularProgress } from "@mui/material";
+import { FileDetails } from "./FileDetails";
+import { DateInput } from "./DateInput";
+import FileUploadIcon from "@mui/icons-material/FileUpload";
+import { DownloadButton } from "./DownloadButton";
+import { RequestErrorSnackbar } from "./RequestErrorSnackbar";
+import "./../styles/FileUpload.css";
 
 const baseStyle = {
   flex: 1,
   display: "flex",
   flexDirection: "column",
   alignItems: "center",
-  padding: "20px",
+  padding: "80px",
   borderWidth: 2,
   borderRadius: 2,
   borderColor: "#eeeeee",
@@ -36,10 +39,11 @@ const rejectStyle = {
 };
 
 export const FileUpload = () => {
-  const [imgEndpoint, setImgEndpoint] = useState({} as ZipEndpoints);
+  const [zipEndpoint, setZipEndpoint] = useState({} as ZipEndpoints);
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
   const [loadingState, setLoadingState] = useState(false);
+  const [open, setOpen] = useState(false);
 
   const {
     getRootProps,
@@ -73,7 +77,10 @@ export const FileUpload = () => {
   const files = acceptedFiles.map((file) => <p key={file.name}>{file.name}</p>);
 
   return (
-    <div className="container" style={{ backgroundColor: "white" }}>
+    <div
+      className="container"
+      style={{ backgroundColor: "white", padding: "1rem" }}
+    >
       {
         //@ts-ignore
         <div {...getRootProps({ style })}>
@@ -85,64 +92,54 @@ export const FileUpload = () => {
           )}
         </div>
       }
-      {files.length > 0 ? (
+      {files.length > 0 && (
         <>
-          <div style={{ color: "black" }}>
-            <h4>File</h4>
-            <p>{files}</p>
+          <div className="file-upload">
+            <FileDetails file={acceptedFiles[0]} />
+            <DateInput
+              startDate={startDate}
+              endDate={endDate}
+              setStartDate={setStartDate}
+              setEndDate={setEndDate}
+            />
           </div>
-          <LocalizationProvider dateAdapter={AdapterDateFns}>
-            <DatePicker
-              minDate={startDate}
-              maxDate={endDate}
-              value={startDate}
-              onChange={(date: Date | null) => {
-                if (date !== null) setStartDate(new Date(date));
-              }}
-            />
-            <DatePicker
-              minDate={startDate}
-              maxDate={endDate}
-              value={endDate}
-              onChange={(date: Date | null) => {
-                if (date !== null) setEndDate(new Date(date));
-              }}
-            />
-          </LocalizationProvider>
-          <br />
-          <button
+          <Button
+            variant="contained"
+            endIcon={<FileUploadIcon />}
             onClick={() =>
-              sendFile(acceptedFiles[0], setImgEndpoint, setLoadingState, {
-                startDate: startDate.toLocaleDateString("en-UK"),
-                endDate: endDate.toLocaleDateString("en-UK"),
-              })
+              sendFile(
+                acceptedFiles[0],
+                setZipEndpoint,
+                setLoadingState,
+                setOpen,
+                {
+                  startDate: startDate.toLocaleDateString("en-UK"),
+                  endDate: endDate.toLocaleDateString("en-UK"),
+                }
+              )
             }
           >
-            upload
-          </button>
+            Upload
+          </Button>
         </>
-      ) : (
-        <></>
       )}
 
-      {imgEndpoint.zip && (
+      {zipEndpoint.zip && (
         <>
           <br />
-          <a href={imgEndpoint.zip} download="aljo">
-            Download Results
-          </a>
+          <DownloadButton zipEndpoint={zipEndpoint} />
         </>
       )}
 
       {loadingState && (
         <>
           <br />
-          <CircularProgress />
+          <CircularProgress sx={{ marginTop: "0.5rem" }} />
         </>
       )}
+      {open && <RequestErrorSnackbar open={open} setOpen={setOpen} />}
     </div>
   );
 };
 
 // TODO: get zip by fetch to avoid one time download
-// TODO: clean up the frontend (styles, generalize code, etc...)
