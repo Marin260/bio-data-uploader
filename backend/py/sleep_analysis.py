@@ -99,8 +99,8 @@ if __name__ == "__main__":
     SCRIPT_OUTPUT = os.path.join(SAVE_DIR, INPUT_FRONT['file_name'])
     os.makedirs(SCRIPT_OUTPUT, exist_ok=True)
 
-    start_date_time =  parser.parse( f'{INPUT_FRONT["start_date"]} 08:00:00')
-    end_date_time =  parser.parse(f'{INPUT_FRONT["end_date"]} 07:59:00')
+    start_date_time =  parser.parse(f'{INPUT_FRONT["start_date"]} 08:00:00', dayfirst=True)
+    end_date_time =  parser.parse(f'{INPUT_FRONT["end_date"]} 07:59:00', dayfirst=True)
 
     times_list = create_datetime_interval(start_date_time, end_date_time)
 
