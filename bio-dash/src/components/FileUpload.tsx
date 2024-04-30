@@ -78,7 +78,7 @@ export const FileUpload = () => {
 
   return (
     <div
-      className="container"
+      className="container "
       style={{ backgroundColor: "white", padding: "1rem" }}
     >
       {
