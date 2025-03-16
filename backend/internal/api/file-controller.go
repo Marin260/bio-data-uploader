@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Zip(c *gin.Context){
+func Zip(c *gin.Context) {
 	log.Println("file-controller::Zip() - Enter")
 
 	// Sending file
