@@ -1,10 +1,10 @@
-from typing import Union, Annotated
-
 from fastapi import FastAPI, Form, UploadFile, HTTPException
-
-from infrastructure.storage.minio import FileStorageClient
-
+from infrastructure import FileStorageClient
+from services import SleepAnalysisService
+from typing import Annotated
 from time import time
+
+
 app = FastAPI()
 
 
@@ -12,55 +12,56 @@ app = FastAPI()
 def healthCheck():
     return {"Hello": "World"}
 
-
-@app.get("/zip/{file_name}")
-def zipFiles(file_name: str, q: Union[str, None] = None):
-    return {"item_id": file_name, "q": q}
-
-
 @app.post("/file-upload")
 def fileUpload(
     file: UploadFile, 
     start: Annotated[str, Form()], 
     end: Annotated[str, Form()]
 ):
-    fileClient = FileStorageClient().MinioClient()
+    file_client = FileStorageClient()
 
-
-    source_file = "./tmbcMFCtM008.txt"
-
-    bucket_name = "flydams"
     uploaded_file = file.filename.split('.')
     epoch = str(time()).split('.')
     destination_file = f"{uploaded_file[0]}_{'_'.join(epoch)}.{uploaded_file[-1]}"
 
-
-    # Make the bucket if it doesn't exist.
-    found = fileClient.bucket_exists(bucket_name)
-    if not found:
-        fileClient.make_bucket(bucket_name)
-        print("Created bucket", bucket_name)
-    else:
-        print("Bucket", bucket_name, "already exists")
-
-    # Upload the file, renaming it in the process
-    fileClient.put_object(
-        bucket_name, destination_file, file.file, file.size
-    )
-    print(
-        source_file, "successfully uploaded as object",
-        destination_file, "to bucket", bucket_name,
-    )
-
-
     # don't accept files bigger than 3MB
     if file.size > 3000000:
-        raise HTTPException(status_code=400, detail="File size too big")
+        raise HTTPException(status_code=400, detail="File size too big")        
     
-    
-        
-    
+    # Upload the file, renaming it in the process
+    file_client.uploadFile(
+        destination_file, file.file, file.size
+    )
+
     return {
         "filename": file.filename,
         "size": file.size,
     }
+
+
+@app.post("/generateZip")
+def generateZip(
+    file: UploadFile, 
+    start: Annotated[str, Form()], 
+    end: Annotated[str, Form()],
+    file_name: Annotated[str, Form()]
+):
+    if file.size > 3000000:
+        raise HTTPException(status_code=400, detail="File size too big")   
+    
+    sleep_service = SleepAnalysisService()
+    file_client = FileStorageClient()
+
+    zip_buffer, zip_data = sleep_service.generate_zip_buffer(file.file, start, end)
+    
+    file_client.uploadFile(f"{file_name}.zip", zip_buffer, zip_data)
+
+    return {
+        "minio_path": f"{file_name}.zip"
+    }
+
+@app.get("/getAllFiles")
+def getAllFiles():
+    storage_client = FileStorageClient()
+    
+    return storage_client.listBucketObjects()
