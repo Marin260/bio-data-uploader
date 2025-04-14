@@ -1,27 +1,26 @@
-from .storage_clients_types import StorageClients
+import os
+from io import BytesIO
 from typing import BinaryIO, List
+
 from minio import Minio
+
+from .storage_clients_types import StorageClients
 
 
 class FileStorageClient:
 
     def __init__(
-            self, 
-            bucket_name: str = "flydams",
-            client_type: StorageClients = "minio"
-        ):
-        #TODO: Use client_type to generalize this to accept any storage client 
-        
+        self, bucket_name: str = "flydams", client_type: StorageClients = "minio"
+    ):
         self.bucket = bucket_name
         self.client = Minio(
-            "127.0.0.1:9000", # TODO: fix this one also
-            access_key="hide this one",
-            secret_key="hide this one also",
-            secure=False
+            os.getenv("MINIO_ENDPOINT"),
+            access_key=os.getenv("MINIO_ACCESS_KEY"),
+            secret_key=os.getenv("MINIO_SECRET_KEY"),
+            secure=os.getenv("MINIO_SECURE_SETTING", "False").lower() in ("true", "1"),
         )
 
         self.createBucket(bucket_name)
-
 
     # Make the bucket if it doesn't exist.
     def createBucket(self, bucket_name: str) -> None:
@@ -32,13 +31,9 @@ class FileStorageClient:
         else:
             print("Bucket", self.bucket, "already exists")
 
+    def uploadFile(self, path: str, data: BinaryIO, size: int) -> None:
+        self.client.put_object(self.bucket, path, data, size)
 
-    def uploadFile(self, path:str, data: BinaryIO, size: int) -> None:
-        self.client.put_object(
-            self.bucket, path, data, size
-        )
-
-    
     # List all files in a bucket
     def listBucketObjects(self, bucket: str = "flydams") -> List[object]:
         storage_files = self.client.list_objects(bucket)
@@ -47,5 +42,10 @@ class FileStorageClient:
         filtered_files = [{"fileName": file["_object_name"]} for file in storage_files]
         return filtered_files
 
+    def getFileByName(self, file_name: str) -> BinaryIO:
+        minio_file_object = self.client.get_object(self.bucket, file_name)
 
+        byte_stream = BytesIO(minio_file_object.read())
+        byte_stream.seek(0)
 
+        return byte_stream
