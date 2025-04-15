@@ -1,20 +1,13 @@
-import os
 from time import time
 from typing import Annotated
 
-from dotenv import load_dotenv
 from fastapi import FastAPI, Form, HTTPException, UploadFile
 
+from extensions import load_env
 from infrastructure import FileStorageClient
 from routes.files import files
 
-# load the env file
-ENVIRONMENT = os.getenv("FLY_DAMS_ENVIRONMENT")
-if os.getenv("FLY_DAMS_ENVIRONMENT"):
-    load_dotenv(f"settings/{ENVIRONMENT}/.env")
-else:
-    load_dotenv(f"settings/.env")
-
+load_env.load_env()
 
 app = FastAPI()
 
