@@ -8,6 +8,8 @@ import numpy as np
 import pandas as pd
 from dateutil import parser
 
+# TODO: must add robust error handling
+
 
 class SleepAnalysisService:
 
@@ -78,9 +80,7 @@ class SleepAnalysisService:
         sleep_buffer.close()
         return sleep_buffer_data
 
-    def generate_zip_buffer(
-        self, file: BinaryIO, start: str, end: str
-    ) -> Tuple[io.BytesIO, int]:
+    def generate_zip_buffer(self, file: BinaryIO, start: str, end: str) -> Tuple[io.BytesIO, int]:
 
         # datetime input for service
         # TODO: should we get datetime format directly from form data?

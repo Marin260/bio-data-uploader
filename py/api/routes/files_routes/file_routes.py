@@ -3,8 +3,8 @@ from typing import Annotated
 from fastapi import APIRouter, Form, HTTPException, UploadFile
 from fastapi.responses import StreamingResponse
 
+from api.services import SleepAnalysisService
 from infrastructure import FileStorageClient
-from services import SleepAnalysisService
 
 router = APIRouter(prefix="/files", tags=["Files"])
 

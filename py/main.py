@@ -1,42 +1,30 @@
-from time import time
-from typing import Annotated
+import os
 
-from fastapi import FastAPI, Form, HTTPException, UploadFile
+from fastapi import FastAPI
+from starlette.middleware.sessions import SessionMiddleware
 
+from api.routes import (
+    admin_routes,
+    auth_routes,
+    file_routes,
+    legacy_routes,
+    user_routes,
+)
 from extensions import load_env
-from infrastructure import FileStorageClient
-from routes.files import files
 
 load_env.load_env()
 
 app = FastAPI()
 
-app.include_router(files.router)
+app.add_middleware(SessionMiddleware, secret_key=os.getenv("MIDDLEWARE_SESSION_SECRET"))
+
+app.include_router(file_routes.router)
+app.include_router(legacy_routes.router)
+app.include_router(user_routes.router)
+app.include_router(auth_routes.router)
+app.include_router(admin_routes.router)
 
 
 @app.get("/ping")
 def healthCheck():
     return {"Hello": "World"}
-
-
-@app.post("/file-upload")
-def fileUpload(
-    file: UploadFile, start: Annotated[str, Form()], end: Annotated[str, Form()]
-):
-    file_client = FileStorageClient()
-
-    uploaded_file = file.filename.split(".")
-    epoch = str(time()).split(".")
-    destination_file = f"{uploaded_file[0]}_{'_'.join(epoch)}.{uploaded_file[-1]}"
-
-    # don't accept files bigger than 3MB
-    if file.size > 3000000:
-        raise HTTPException(status_code=400, detail="File size too big")
-
-    # Upload the file, renaming it in the process
-    file_client.uploadFile(destination_file, file.file, file.size)
-
-    return {
-        "filename": file.filename,
-        "size": file.size,
-    }
