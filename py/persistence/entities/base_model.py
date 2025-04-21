@@ -1,8 +1,5 @@
-from peewee import Model
-
-from ..db_connection import database
+from sqlalchemy.orm import DeclarativeBase
 
 
-class BaseModel(Model):
-    class Meta:
-        database = database
+class Base(DeclarativeBase):
+    pass

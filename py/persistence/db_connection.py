@@ -1,7 +1,8 @@
 import os
 
 from dotenv import load_dotenv
-from playhouse.pool import PooledPostgresqlDatabase
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 ENVIRONMENT = os.getenv("FLY_DAMS_ENVIRONMENT")
 
@@ -12,12 +13,13 @@ if os.getenv("FLY_DAMS_ENVIRONMENT"):
 else:
     load_dotenv(f"settings/.env")
 
-database = PooledPostgresqlDatabase(
-    database=os.getenv("POSTGRES_DB"),
-    user=os.getenv("POSTGRES_USER"),
-    password=os.getenv("POSTGRES_PASSWORD"),
-    host=os.getenv("POSTGRES_HOST"),
-    port=os.getenv("POSTGRES_PORT"),
-    max_connections=10,
-    stale_timeout=300,
-)
+# dbUrl = f"sqlite+{os.getenv("TURSO_DATABASE_URL")}/?authToken={os.getenv("TURSO_AUTH_TOKEN")}&secure=true"
+dbUrl = f"postgresql://{os.getenv("POSTGRES_USER")}:{os.getenv("POSTGRES_PASSWORD")}@{os.getenv("POSTGRES_HOST")}:{os.getenv("POSTGRES_PORT")}/{os.getenv("POSTGRES_DB")}"
+
+engine = create_engine(dbUrl, future=True)
+SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
+
+
+def get_db():
+    with SessionLocal() as session:
+        yield session
