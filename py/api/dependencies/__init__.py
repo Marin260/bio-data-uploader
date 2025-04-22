@@ -1,1 +1,2 @@
-from .required_bearer import *
+from .require_admin import *
+from .require_bearer import *

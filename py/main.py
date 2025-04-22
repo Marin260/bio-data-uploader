@@ -16,13 +16,15 @@ load_env.load_env()
 
 app = FastAPI()
 
+# TODO: ratelimit app
+
 app.add_middleware(SessionMiddleware, secret_key=os.getenv("MIDDLEWARE_SESSION_SECRET"))
 
 app.include_router(file_routes.router)
-app.include_router(legacy_routes.router)
 app.include_router(user_routes.router)
-app.include_router(auth_routes.router)
 app.include_router(admin_routes.router)
+app.include_router(auth_routes.router)
+app.include_router(legacy_routes.router)
 
 
 @app.get("/ping")
