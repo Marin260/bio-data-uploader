@@ -6,6 +6,12 @@ import (
 
 func main() {
 	r := server.BioServer()
+	r.Run(":5005")
 
-	r.Run(":8080")
+	//server := server.NewServer()
+
+	//err := server.ListenAndServe()
+	//if err != nil {
+	//	panic(fmt.Sprintf("cannot start server: %s", err))
+	//}
 }

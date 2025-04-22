@@ -21,7 +21,7 @@
 go.work
 bin
 venv
-output/*
+*/**/output/*
 bio
 *.log
 # Logs
@@ -49,3 +49,5 @@ dist-ssr
 *.sln
 *.sw?
 .env
+*/**/.venv
+*/**/__pycache__

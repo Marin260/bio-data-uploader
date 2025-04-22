@@ -1,4 +1,4 @@
-package api
+package handlers
 
 import (
 	"encoding/json"
@@ -10,7 +10,7 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/gin-gonic/gin"
+	"github.com/go-chi/chi"
 )
 
 type ScriptInput struct {
@@ -22,22 +22,42 @@ type ScriptInput struct {
 
 const outputPath = "./output/"
 
-func FileUpload(c *gin.Context) {
+func MountFileUploadRoutes(r *chi.Mux) {
+	fileRouter := chi.NewRouter()
+
+	fileRouter.Post("/upload", FileUploadHandler)
+
+	r.Mount("/file", fileRouter)
+}
+
+func FileUploadHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("file-upload-controller::FileUpload() - Enter")
 
 	// Get file from form
 	log.Println("file-upload-controller::FileUpload() - Reading the request")
-	file, handler, err := c.Request.FormFile("file")
+
+	resp := make(map[string]string)
+
+	file, handler, err := r.FormFile("file")
 	if err != nil {
-		customError := fmt.Sprintf("Error while getting the file from the submited form - %s", err)
-		ErrorHandler(c, BackendError{err: customError, message: "Internal Server Error", code: http.StatusInternalServerError})
+		resp["error"] = fmt.Sprintf("Error while getting the file from the submited form - %s", err)
+		jsonResp, err := json.Marshal(resp)
+		if err != nil {
+			log.Fatalf("error handling JSON marshal. Err: %v", err)
+		}
+		w.Write(jsonResp)
 		return
 	}
 	defer file.Close()
 
 	// Check if the file is to big
 	if handler.Size > 3000000 {
-		MalformedRequest(c, int(handler.Size))
+		resp["error"] = "File size to big"
+		jsonResp, err := json.Marshal(resp)
+		if err != nil {
+			log.Fatalf("error handling JSON marshal. Err: %v", err)
+		}
+		w.Write(jsonResp)
 		return
 	}
 
@@ -46,8 +66,12 @@ func FileUpload(c *gin.Context) {
 	fileName := strings.TrimSuffix(handler.Filename, ".txt")
 	dstFile, err := os.Create(outputPath + fileName + ".csv")
 	if err != nil {
-		customError := fmt.Sprintf("Error while creating a local file - %s", err)
-		ErrorHandler(c, BackendError{err: customError, message: "Internal Server Error", code: http.StatusInternalServerError})
+		resp["error"] = fmt.Sprintf("Error while creating a local file - %s", err)
+		jsonResp, err := json.Marshal(resp)
+		if err != nil {
+			log.Fatalf("error handling JSON marshal. Err: %v", err)
+		}
+		w.Write(jsonResp)
 		return
 	}
 
@@ -55,28 +79,40 @@ func FileUpload(c *gin.Context) {
 	log.Println("file-upload-controller::FileUpload() - Copying request file content to the newly created file")
 	_, err = io.Copy(dstFile, file)
 	if err != nil {
-		customError := fmt.Sprintf("Error while copying file content - %s", err)
-		ErrorHandler(c, BackendError{err: customError, message: "Internal Server Error", code: http.StatusInternalServerError})
+		resp["error"] = fmt.Sprintf("Error while copying file content - %s", err)
+		jsonResp, err := json.Marshal(resp)
+		if err != nil {
+			log.Fatalf("error handling JSON marshal. Err: %v", err)
+		}
+		w.Write(jsonResp)
 		return
 	}
 
 	// Prepare json input for the py script
 	log.Println("file-upload-controller::FileUpload() - Creating json input")
-	startDate := c.Request.FormValue("start")
-	endDate := c.Request.FormValue("end")
+	startDate := r.Form.Get("start") //c.Request.FormValue("start")
+	endDate := r.Form.Get("end")
 	scriptInputJSON := ScriptInput{FilePath: outputPath + fileName + ".csv", FileName: fileName, StartDate: startDate, EndDate: endDate}
 	scriptInputFile, err := os.Create(outputPath + fileName + ".json")
 	if err != nil {
-		customError := fmt.Sprintf("Error while creating a local file - %s", err)
-		ErrorHandler(c, BackendError{err: customError, message: "Internal Server Error", code: http.StatusInternalServerError})
+		resp["error"] = fmt.Sprintf("Error while creating a local file - %s", err)
+		jsonResp, err := json.Marshal(resp)
+		if err != nil {
+			log.Fatalf("error handling JSON marshal. Err: %v", err)
+		}
+		w.Write(jsonResp)
 		return
 	}
 
 	encoder := json.NewEncoder(scriptInputFile)
 	err = encoder.Encode(scriptInputJSON)
 	if err != nil {
-		customError := fmt.Sprintf("Error while encoding json - %s", err)
-		ErrorHandler(c, BackendError{err: customError, message: "Internal Server Error", code: http.StatusInternalServerError})
+		resp["error"] = fmt.Sprintf("Error while encoding json - %s", err)
+		jsonResp, err := json.Marshal(resp)
+		if err != nil {
+			log.Fatalf("error handling JSON marshal. Err: %v", err)
+		}
+		w.Write(jsonResp)
 		return
 	}
 
@@ -86,22 +122,29 @@ func FileUpload(c *gin.Context) {
 	if err != nil {
 		fmt.Println(string(out))
 		fmt.Println(err)
-		customError := fmt.Sprintf("Error while runinng the script - %s", err)
-		ErrorHandler(c, BackendError{err: customError, message: "Internal Server Error", code: http.StatusInternalServerError})
+		resp["error"] = fmt.Sprintf("Error while runinng the script - %s", err)
+		jsonResp, err := json.Marshal(resp)
+		if err != nil {
+			log.Fatalf("error handling JSON marshal. Err: %v", err)
+		}
+		w.Write(jsonResp)
 		return
 	}
-	c.Writer.Header().Set("Content-Type", "application/json")
-	c.JSON(http.StatusOK, gin.H{
-		"fileName": fileName,
-	})
+
+	w.Header().Set("Content-Type", "application/json")
+
+	resp["fileName"] = fileName
+	jsonResp, err := json.Marshal(resp)
+	if err != nil {
+		log.Fatalf("error handling JSON marshal. Err: %v", err)
+	}
+	w.Write(jsonResp)
 
 	// Removing all the created files
 	defer removeFiles(fileName, scriptInputFile, dstFile)
 	fmt.Println(fileName)
-	// TODO: clean up the error handling
 
 	log.Println("file-upload-controller::FileUpload() - Exit")
-	return
 }
 
 func removeFiles(fileName string, jsonFile *os.File, csvFile *os.File) {
@@ -121,4 +164,11 @@ func removeFiles(fileName string, jsonFile *os.File, csvFile *os.File) {
 	}
 
 	log.Println("file-upload-controller::removeFiles() - Exit")
+}
+
+func FileZipHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println("file-controller::Zip() - Enter")
+	//go filePath := fmt.Sprintf("./output/%s.zip", c.Params.ByName("name"))
+
+	log.Println("file-controller::Zip() - Exit")
 }
