@@ -12,14 +12,10 @@ def require_bearer(credentials: HTTPAuthorizationCredentials = Depends(__securit
     authz_service = AuthorizationService()
 
     auth_header = credentials.credentials
-    if not auth_header or not auth_header.startswith("Bearer"):
-        raise HTTPException(status_code=401, detail="Invalid or missing Bearer token")
     token = auth_header.split(" ")
-    if len(token) < 2:
-        print("got here")
-        raise HTTPException(status_code=401, detail="Invalid Token")
+    if not auth_header or not auth_header.startswith("Bearer") or len(token) < 2:
+        raise HTTPException(status_code=401, detail="Invalid or missing Bearer token")
     try:
         authz_service.verify_token(token[1])
     except:
-        print("actually got here")
         raise HTTPException(status_code=401, detail="Invalid Token")

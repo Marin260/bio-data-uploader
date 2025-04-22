@@ -1,12 +1,13 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Form, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, Form, HTTPException, UploadFile
 from fastapi.responses import StreamingResponse
 
+from api.dependencies import require_bearer
 from api.services import SleepAnalysisService
 from infrastructure import FileStorageClient
 
-router = APIRouter(prefix="/files", tags=["Files"])
+router = APIRouter(prefix="/files", tags=["Files"], dependencies=[Depends(require_bearer)])
 
 
 @router.get("/")
@@ -43,9 +44,7 @@ def generateZip(
     sleep_analysis_service = SleepAnalysisService()
     storage_client = FileStorageClient()
 
-    zip_buffer, zip_data_len = sleep_analysis_service.generate_zip_buffer(
-        file.file, start, end
-    )
+    zip_buffer, zip_data_len = sleep_analysis_service.generate_zip_buffer(file.file, start, end)
 
     storage_client.uploadFile(f"{file_name}.zip", zip_buffer, zip_data_len)
 
