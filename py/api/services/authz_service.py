@@ -44,3 +44,7 @@ class AuthorizationService:
         decoded_token = jwt.decode(token, os.getenv("AUTHZ_SECRET_KEY"))
         # Return sub claim: user email
         return decoded_token["sub"]
+
+    def verify_admin_token(self, token):
+        admins = os.getenv("ADMINS").split(";")
+        return self.verify_token(token)["sub"] in admins
