@@ -4,7 +4,6 @@ from fastapi import HTTPException
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from api.models.requests import UserCreateRequest
 from persistence.db_connection import get_db
 from persistence.entities import User
 
@@ -14,25 +13,26 @@ class UserQueries:
         self.__db_session = db
 
     def select_all_users(self) -> List[User]:
-        users = self.__db_session.query(User).all()
-        return users
+        return self.__db_session.query(User).all()
 
     def select_user_by_id(self, user_id: int) -> User | None:
         return self.__db_session.query(User).filter_by(user_id=user_id).first()
 
     def select_user_by_email(self, email: str) -> User | None:
-        return self.__db_session.query(User).filter_by(email=email).first()
+        user = self.__db_session.query(User).filter_by(email=email).first()
+        return user
 
-    def insert_user(self, request_user: UserCreateRequest) -> User:
+    def insert_user(self, user_email: str, status: bool = False) -> User:
+        # TODO: should check and not rely on db exceptions
         try:
-            user = User(email=request_user.email, blocked=request_user.blocked)
+            user = User(email=user_email, blocked=status)
             self.__db_session.add(user)
             self.__db_session.commit()
             return user
         except IntegrityError:
             self.__db_session.rollback()
-            existing_user = self.select_user_by_email(request_user.email)
 
+            existing_user = self.select_user_by_email(user_email)
             assert existing_user is not None
 
             return existing_user
