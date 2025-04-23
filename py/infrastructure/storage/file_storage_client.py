@@ -9,9 +9,7 @@ from .storage_clients_types import StorageClients
 
 class FileStorageClient:
 
-    def __init__(
-        self, bucket_name: str = "flydams", client_type: StorageClients = "minio"
-    ):
+    def __init__(self, bucket_name: str = "flydams", client_type: StorageClients = "minio"):
         self.bucket = bucket_name
         self.client = Minio(
             os.getenv("MINIO_ENDPOINT"),
@@ -31,8 +29,9 @@ class FileStorageClient:
         else:
             print("Bucket", self.bucket, "already exists")
 
-    def uploadFile(self, path: str, data: BinaryIO, size: int) -> None:
-        self.client.put_object(self.bucket, path, data, size)
+    def uploadFile(self, path: str, data: BinaryIO, size: int) -> str:
+        file_identifier = self.client.put_object(self.bucket, path, data, size)
+        return file_identifier.etag
 
     # List all files in a bucket
     def listBucketObjects(self, bucket: str = "flydams") -> List[object]:

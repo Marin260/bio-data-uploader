@@ -2,9 +2,7 @@ import os
 
 from authlib.integrations.starlette_client import OAuth
 from fastapi import APIRouter, Depends, HTTPException, Request
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from api.dependencies import require_bearer
 from api.services import AuthorizationService
 from persistence.repository import UserQueries, user_repo
 
@@ -43,7 +41,6 @@ async def auth_callback(request: Request, user_queries: UserQueries = Depends(us
 
         access_token = authz_service.generate_access_token(user.email)
         return {"access_token": access_token}
-        return google_token
 
     else:
         raise HTTPException(status_code=400, detail="Invalid login token")
