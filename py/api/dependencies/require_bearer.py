@@ -11,11 +11,10 @@ __security = HTTPBearer(bearerFormat="JWT")
 def require_bearer(credentials: HTTPAuthorizationCredentials = Depends(__security)) -> None:
     authz_service = AuthorizationService()
 
-    auth_header = credentials.credentials
-    token = auth_header.split(" ")
-    if not auth_header or not auth_header.startswith("Bearer") or len(token) < 2:
+    token = credentials.credentials
+    if not token or credentials.scheme != "Bearer":
         raise HTTPException(status_code=401, detail="Invalid or missing Bearer token")
     try:
-        authz_service.verify_token(token[1])
+        authz_service.verify_token(token)
     except:
         raise HTTPException(status_code=401, detail="Invalid Token")

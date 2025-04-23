@@ -38,10 +38,9 @@ class AuthorizationService:
 
     def get_loged_in_user(self, request: Request) -> str:
         token = request.headers.get("Authorization").split(" ")
-
         assert len(token) == 2
 
-        decoded_token = jwt.decode(token, os.getenv("AUTHZ_SECRET_KEY"))
+        decoded_token = jwt.decode(token[1], os.getenv("AUTHZ_SECRET_KEY"))
         # Return sub claim: user email
         return decoded_token["sub"]
 
